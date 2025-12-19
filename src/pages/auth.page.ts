@@ -93,16 +93,22 @@ export class AuthPage {
     await expect.poll(async () => await this.region().locator('option').count()).toBeGreaterThan(1);
     await expect.poll(async () => (await this.region().locator('option').nth(1).textContent()) ?? '').not.toMatch(/please select/i);
 
-    // Prefer a deterministic DOM-based selection here. The site sometimes resets the value back to placeholder
-    // after a normal selectOption; forcing the selectedIndex + change event proved more stable.
-    await this.page.evaluate(() => {
-      const select = document.querySelector('#AccountFrm_zone_id') as HTMLSelectElement | null;
-      if (!select) return;
-      if (select.options.length > 1) {
-        select.selectedIndex = 1;
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    // Prefer a deterministic DOM-based selection here. The site sometimes resets the value back to the
+    // placeholder even after options are loaded, so we retry a few times until it sticks.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await this.page.evaluate(() => {
+        const select = document.querySelector('#AccountFrm_zone_id') as HTMLSelectElement | null;
+        if (!select) return;
+        if (select.options.length > 1) {
+          select.selectedIndex = 1;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+
+      const selectedText = (await this.region().locator('option:checked').textContent()) ?? '';
+      if (!/please select/i.test(selectedText)) break;
+      await this.page.waitForTimeout(250);
+    }
 
     await expect.poll(async () => (await this.region().locator('option:checked').textContent()) ?? '').not.toMatch(/please select/i);
 

@@ -39,7 +39,7 @@ export class CartPage {
   couponInput(): Locator {
     // Prefer IDs first (if present), then fall back to name-based matching.
     return this.page.locator(
-      '#coupon_coupon, #coupon_code, form#coupon input[id*="coupon" i], form#coupon input[name*="coupon" i], input[id*="coupon" i], input[name*="coupon" i]',
+      '#coupon_coupon, #coupon_code, form#coupon input[type="text"], form#coupon input[id*="coupon" i], form#coupon input[name*="coupon" i], input[id*="coupon" i], input[name*="coupon" i]',
     );
   }
 

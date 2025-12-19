@@ -43,4 +43,34 @@ test.describe('Cart', () => {
     // Cart updates may happen with delayed UI refresh.
     await expect.poll(async () => await cart.totalText()).not.toBe(beforeTotal);
   });
+
+  test('removes an item from the cart after setting quantity to 2', async ({ page }) => {
+    const catalog = new CatalogHelpers(page);
+    await catalog.openAnyProductFromHome();
+    await catalog.addToCartFromPdp();
+
+    const cart = new CartPage(page);
+    await cart.goto();
+
+    const lineItemRow = cart.cartTable().getByRole('row').nth(1);
+    const qtyInput = lineItemRow.getByRole('textbox').first();
+    await expect(qtyInput).toBeVisible();
+
+    await qtyInput.fill('2');
+    await cart.updateButton().click();
+    await expect(qtyInput).toHaveValue('2');
+
+    const remove = lineItemRow.locator('a[title*="Remove" i], button[title*="Remove" i], a[href*="remove" i]').first();
+    await expect(remove).toBeVisible();
+    await remove.click();
+
+    // After removal, the UI may either hide the cart table entirely or render an empty-cart message.
+    await expect(page.locator('#maincontainer')).toContainText(/shopping cart is empty|\bempty\b/i);
+    const tableCount = await cart.cartTable().count();
+    if (tableCount > 0) {
+      await expect(cart.cartTable().getByRole('row')).toHaveCount(1);
+    } else {
+      await expect(cart.cartTable()).toHaveCount(0);
+    }
+  });
 });
