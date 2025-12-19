@@ -36,6 +36,33 @@ export class CartPage {
     return this.page.getByRole('table').filter({ has: this.page.getByRole('row', { name: /sub-total/i }) }).first();
   }
 
+  couponInput(): Locator {
+    // Prefer IDs first (if present), then fall back to name-based matching.
+    return this.page.locator(
+      '#coupon_coupon, #coupon_code, form#coupon input[id*="coupon" i], form#coupon input[name*="coupon" i], input[id*="coupon" i], input[name*="coupon" i]',
+    );
+  }
+
+  applyCouponButton(): Locator {
+    // Prefer IDs first (if present), then fall back to text/value/title.
+    return this.page.locator(
+      'form#coupon #apply_coupon, form#coupon #coupon_apply, #apply_coupon, #coupon_apply, form#coupon button:has-text("Apply"), form#coupon input[value*="Apply" i], button:has-text("Apply"), input[value*="Apply" i], button[title*="Apply" i], input[title*="Apply" i]',
+    );
+  }
+
+  couponMessage(): Locator {
+    return this.page.locator('#maincontainer .alert, #maincontainer .alert-error, #maincontainer .error, #maincontainer .help-block').first();
+  }
+
+  async hasCouponUI(): Promise<boolean> {
+    return (await this.couponInput().count()) > 0;
+  }
+
+  async applyCoupon(code: string) {
+    await this.couponInput().first().fill(code);
+    await this.applyCouponButton().first().click();
+  }
+
   async totalText(): Promise<string> {
     const row = this.page.getByRole('row').filter({ hasText: /^Total:/i }).first();
     const cells = row.getByRole('cell');

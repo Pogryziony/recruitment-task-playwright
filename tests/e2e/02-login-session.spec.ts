@@ -8,8 +8,8 @@ test.describe('Login / Session', () => {
     // Create a user first (keeps test independent from pre-existing creds)
     await auth.gotoRegister();
     await auth.register(user);
-    await expect(page.getByRole('heading', { name: /your account has been created/i })).toBeVisible({ timeout: 15_000 });
-    await expect(page).toHaveURL(/rt=account\/success/);
+    await expect(page).toHaveURL(/rt=account\/success/, { timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: /your account has been created/i })).toBeVisible();
 
     // Registration signs the user in; log out so we can explicitly cover the login flow.
     await auth.logout();

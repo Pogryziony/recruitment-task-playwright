@@ -8,8 +8,8 @@ test.describe('User Registration', () => {
     await auth.gotoRegister();
     await auth.register(user);
 
-    await expect(page.getByRole('heading', { name: /your account has been created/i })).toBeVisible({ timeout: 15_000 });
-    await expect(page).toHaveURL(/rt=account\/success/);
+    await expect(page).toHaveURL(/rt=account\/success/, { timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: /your account has been created/i })).toBeVisible();
   });
 
   test('shows validation when privacy policy is not accepted', async ({ page, user }) => {

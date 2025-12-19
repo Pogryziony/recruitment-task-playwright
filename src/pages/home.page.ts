@@ -19,11 +19,22 @@ export class HomePage {
   }
 
   async search(query: string) {
-    const input = this.page
-      .getByRole('textbox', { name: /search keywords/i })
-      .or(this.page.locator('input[name="filter_keyword"], #filter_keyword'));
+    // Scope to the site search form so we don't accidentally interact with other forms
+    // (e.g. newsletter signup) that also contain submit buttons.
+    const form = this.page.locator('#search_form').first();
+
+    // Prefer IDs first; fall back to label/name based selectors.
+    const input = form
+      .locator('#filter_keyword, #keyword, input[name="filter_keyword"]')
+      .or(this.page.getByRole('textbox', { name: /search keywords/i }));
 
     await input.first().fill(query);
-    await input.first().press('Enter');
+
+    const submit = form.locator('#search_button, button[type="submit"], input[type="submit"]');
+    if (await submit.first().isVisible()) {
+      await submit.first().click();
+    } else {
+      await input.first().press('Enter');
+    }
   }
 }

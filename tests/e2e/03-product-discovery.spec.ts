@@ -13,6 +13,16 @@ test.describe('Product Discovery', () => {
 
     await results.waitForResultsOrEmpty();
 
+    // Best-effort: apply a range-based filter if the UI offers one (e.g., price buckets, slider).
+    // If not available on this demo page, proceed and record the limitation.
+    const rangeFilterApplied = await results.tryApplyRangeFilterFromUI();
+    if (!rangeFilterApplied) {
+      test.info().annotations.push({
+        type: 'note',
+        description: 'No range-based filters were present on the search results page; proceeding without filter.',
+      });
+    }
+
     const count = await results.results().count();
     if (count === 0) {
       await expect(page.locator('body')).toContainText(/no product|no results/i);
